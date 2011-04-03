@@ -1,0 +1,4 @@
+{% load i18n %}
+<a class="spam" href="{% url contrib.spam.views.mark post.id %}">
+    <img src="{{ MEDIA_URL }}spam.png" alt="{% trans "spam" %}"/>
+</a>

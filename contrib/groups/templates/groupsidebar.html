@@ -1,0 +1,18 @@
+{% load sweettags i18n %}
+
+<div style="groups">
+    <ha>{% trans "Groups" %}</h1>
+    <div id="groups">
+        {% for group in group_list %}
+            <div class="avatar">
+                <a href="{% url contrib.groups.views.detail group.id %}">
+                <img src="{{ group.icon.url }}" alt="{{ group.name }}" title="{{group.name }}"
+                    width="40px" height="40px"/>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    <div style="clear:both">
+        <a href="{% url contrib.groups.views.index %}">{% trans "All groups" %}</a>
+    </div>
+</div>

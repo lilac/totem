@@ -1,0 +1,40 @@
+{% load i18n %}
+
+<style>
+    .karma_ranking {
+        font-size: small;
+    }
+</style>
+
+<div style="karma">
+{% if karma %}
+    <h2>{% trans "Karma" %}: {{ karma.karma|floatformat:2 }}<h2>
+{% endif %}
+</div>
+<div class="karma_ranking">
+    <h3>{% trans "Users karma ranking" %}:</h3>
+<table>
+   {% for entry in karma_ranking %}
+    <tr>
+        <td><a href="{% url ublogging.views.user entry.user.username %}">{{ entry.user.username }}</a></td>
+        <td>{{ entry.karma|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+<div class="karma_ranking">
+    <h3>{% trans "Sweets karma ranking" %}:</h3>
+<table>
+   {% for entry in sweet_karma_ranking %}
+    <tr>
+        <td><a href="{% url ublogging.views.sweet entry.sweet.id %}">{{ entry.sweet.text }}</a></td>
+        <td width="30%">
+            {{ entry.karma|floatformat:2 }}
+            <br/>
+            (+{{ entry.positives }}|-{{ entry.negatives }})
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</div>

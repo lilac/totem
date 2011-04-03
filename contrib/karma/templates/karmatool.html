@@ -1,0 +1,54 @@
+{% load i18n %}
+
+<script type="text/javascript">
+    var voted_binded = false;
+    $(document).ready(function() {
+        if (!voted_binded)
+        {
+            $(".voto").click(function() {
+                var sweet = $(this).parent().parent().parent();
+                var postkarma = sweet.find(".postkarma");
+                var positives = sweet.find(".positives");
+                var negatives = sweet.find(".negatives");
+                var form = $(this).parent();
+                ajax_url = form.attr('action');
+                form.html('<img src="{{ MEDIA_URL }}ajax-loader.gif" alt="loading"/>');
+                value = $(this).val();
+                $.ajax({url: ajax_url,
+                        type: "POST",
+                        data: {vote: value, ajax: 'true'},
+                        dataType: "json",
+                        success: function(data, textStatus, XMLHttpRequest){
+                            postkarma.html(parseFloat(data.karma));
+                            form.html("{% trans "voted" %}");
+                            positives.html(data.positives);
+                            negatives.html(data.negatives);
+                            return false;
+                        }
+                        });
+                return false;
+            });
+        }
+        voted_binded = true;
+    });
+</script>
+
+{% ifequal auth_user sweet.user %}
+{% else %}
+    <div class="votes">
+    {% if not voted %}
+        {% if not expired %}
+        <form action="{% url contrib.karma.views.vote sweet.id %}" method="post">
+            <button name="vote" value="1" class="voto"><img src="{{ MEDIA_URL }}button-ok.png" alt="plus"></button>
+            <button name="vote" value="-1" class="voto"><img src="{{ MEDIA_URL }}button-cancel.png" alt="minus"></button>
+        </form>
+        {% else %}
+        {% trans "expired" %}
+        {% endif %}
+    {% else %}
+    {% trans "voted" %}
+    {% endif %}
+    </div>
+{% endifequal %}
+(+<span class="positives">{{ karma.positives }}</span>|-<span class="negatives">{{ karma.negatives }}</span>)
+<span class="postkarma">{{ karma.karma|floatformat:2 }}</span>

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block js %}
+<!--
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+    -->
+<!-- Load Queue widget CSS and jQuery -->
+<style type="text/css">@import url({{ MEDIA_URL }}plupload/css/plupload.queue.css);</style>
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    google.load("jquery", "1.4");
+</script>
+
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/index.js"></script>
+<!-- Thirdparty intialization scripts, needed for the Google Gears and BrowserPlus runtimes -->
+<script type="text/javascript" src="{{ MEDIA_URL }}plupload/js/gears_init.js"></script>
+<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
+<!-- Load plupload and all it's runtimes and finally the jQuery UI queue widget -->
+<script type="text/javascript" src="{{ MEDIA_URL }}plupload/js/plupload.full.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}plupload/js/jquery.ui.plupload.min.js"></script> 
+<!--
+<script type="text/javascript" src="http://www.plupload.com/plupload/js/jquery.ui.plupload.min.js"></script>
+-->
+
+<script type="text/javascript">
+jQuery.fn.extend({
+insertAtCaret: function(myValue){
+  return this.each(function(i) {
+    if (document.selection) {
+      this.focus();
+      sel = document.selection.createRange();
+      sel.text = myValue;
+      this.focus();
+    }
+    else if (this.selectionStart || this.selectionStart == '0') {
+      var startPos = this.selectionStart;
+      var endPos = this.selectionEnd;
+      var scrollTop = this.scrollTop;
+      this.value = this.value.substring(0, startPos)+myValue+this.value.substring(endPos,this.value.length);
+      this.focus();
+      this.selectionStart = startPos + myValue.length;
+      this.selectionEnd = startPos + myValue.length;
+      this.scrollTop = scrollTop;
+    } else {
+      this.value += myValue;
+      this.focus();
+    }
+  })
+}
+});
+// Convert divs to queue widgets when the DOM is ready
+$(function() {
+    $("#uploader").plupload({
+        // General settings
+        runtimes : 'gears,html5,flash,silverlight,browserplus',
+        url : 'api/image/upload.json',
+        max_file_size : '10mb',
+        chunk_size : '1mb',
+        unique_names : true,
+
+        // Resize images on clientside if we can
+        resize : {width : 320, height : 240, quality : 90},
+
+        // Specify what files to browse for
+        filters : [
+            {title : "Image files", extensions : "jpg,gif,png"},
+            {title : "Zip files", extensions : "zip"}
+        ],
+
+        // Flash settings
+        flash_swf_url : '{{ MEDIA_URL }}plupload/js/plupload.flash.swf',
+
+        // Silverlight settings
+        silverlight_xap_url : '{{ MEDIA_URL }}plupload/js/plupload.silverlight.xap',
+
+        init: {
+                FileUploaded: function(up, file, info) {
+                                  var urls = JSON.parse (info.response);
+                                  var render = '';
+                                  $(urls).each(function() {
+                                          render += '[image:' + this + ']';
+                                          });
+                                  /*
+                                  for (var i in urls) {
+                                      render += '[image:' + urls[i] + ']';
+                                  }
+                                  */
+                  $('#post_form textarea').insertAtCaret(render);
+              },
+        }
+    });
+
+    // Client side form validation
+    $('form #image_form').submit(function(e) {
+        var uploader = $('#uploader').pluploadQueue();
+
+        // Validate number of uploaded files
+        if (uploader.total.uploaded == 0) {
+            // Files in queue upload them first
+            if (uploader.files.length > 0) {
+                // When all files are uploaded submit form
+                uploader.bind('UploadProgress', function() {
+                    if (uploader.total.uploaded == uploader.files.length)
+                        $('form').submit();
+                });
+
+                uploader.start();
+            } else
+                alert('You must at least upload one file.');
+
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block feed %}
+    {% if feedurl %}
+        <link href="{{feedurl}}" type="application/rss+xml" rel="alternate" title="feed"/>
+    {% endif %}
+{% endblock %}
+
+{% load sweettags i18n %}
+
+{% block top %}
+{% if user.is_authenticated %}
+<div id="post_form_container">
+<form id="post_form" action="{% url ublogging.views.new %}" method="post">
+    <textarea maxlength="140" name="text" id="text"></textarea>
+    <span id="counter">140</span>
+    <div id="hc" class="hide">140</div>
+    <input id="post_button" class="button" type="submit" value="{% trans "Post!" %}" />
+</form>
+<form id="image_form" method="post" enctype="multipart/form-data">
+    <div id="uploader">
+        <p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+    </div>
+</form>
+</div>
+<img id="refresh_img" src="{{ MEDIA_URL }}ajax-loader.gif" style="display:none"/>
+{% endif %}
+{% endblock top %}
+
+{% block content %}
+
+{% if error_message %}<div class="message"><p><strong>{{ error_message }}</strong></p></div>{% endif %}
+
+{% if latest_post_list %}
+    <div id="sweets">
+        {% for post in latest_post_list.object_list %}
+            {% format_sweet post  %}
+        {% endfor %}
+    </div>
+    <div id="viewmore">
+        <a id="view_more" href="?page={{ latest_post_list.next_page_number }}">{% trans "view more" %}</a>
+    </div>
+    <img id="loading_view_more" src="{{ MEDIA_URL }}ajax-loader.gif" style="display:none"/>
+{% else %}
+{% if sweet %}
+    <div id="sweets">
+        {% format_sweet sweet %}
+    </div>
+{% else %}
+    <p>{% trans "No posts are available." %}</p>
+{% endif %}
+{% endif %}
+
+
+<div class="hide" id="refresh_uri">{% if not refresh_uri %}{% url ublogging.views.refresh_index %}{% else %}{{refresh_uri}}{% endif %}</div>
+<div class="hide" id="pagenumber">{{page}}</div>
+
+{% endblock content %}

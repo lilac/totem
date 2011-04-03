@@ -1,0 +1,108 @@
+{% load webdesign %}
+{% load sweettags %}
+{% load i18n %}
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Sweetter 3.0: {% block title %} Microblogging {% endblock %}</title>
+
+    <link rel="shortcut icon" href="{{ MEDIA_URL }}favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="{{ MEDIA_URL }}themes/sweetter3/css/default.css" />
+    {% block feed %} {% endblock %}
+    {% block css %} {% endblock %}
+    {% block js %} {% endblock %}
+  </head>
+  <body>
+    <div id="principal">
+        <a href="{% url ublogging.views.index %}">
+        <div id="title">
+            <h1>Sweetter 3.0</h1>
+        </div>
+        </a>
+        <div id="wrapper-top"></div>
+        <div id="wrapper">
+            &nbsp;
+            <div id="links">
+                <ul>
+                    {% if not user.is_authenticated %}
+                        <li><a href="{% url django.contrib.auth.views.login %}">{% trans "Login" %}</a></li>
+                        <li><a href="{% url ublogging.views.join %}">{% trans "Register" %}</a></li>
+                    {% else %}
+                        <li><a href="{% url ublogging.views.index %}">{% trans "Index" %}</a></li>
+                        <li><a href="{% url ublogging.views.public_timeline %}">{% trans "Public Timeline" %}</a></li>
+                        <li><a href="{% url ublogging.views.profile %}">{% trans "Profile" %}</a></li>
+                        <li><a href="{% url ublogging.views.logout %}">{% trans "Logout" %}</a></li>
+                    {% endif %}
+                    {% block links %} {% links %} {% endblock %}
+                </ul>
+            </div>
+
+            <div id="top">
+                {% block top %} {% endblock %}
+                {% if flash %}
+                    {% if flash.is_error %}
+                        <div class="flash error">{{ flash.msg }}</div>
+                    {% else %}
+                        <div class="flash info">{{ flash.msg }}</div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div id="content">
+                {% block headbar %} {% headbar %} {% endblock %}
+                {% block content %}  {% endblock %}
+            </div>
+            <div id="sidebar">
+                {% block sidebar %} {% sidebar %} {% endblock %}
+            </div>
+            {% block bottom %} {% endblock %}
+            <div id="clear"></div>
+        </div>
+        <div id="wrapper-bottom"></div>
+        <div id="footer">
+            {% block footer %}
+            {% trans "Sweetter 3.0 is opensource software. Powered by Django." %}
+            <a href="http://dev.sweetter.net" style="color:#000055;">Trac</a> |
+            <a href="http://gitorious.org/sweetter" style="color:#000055;">{% trans "Get the code!" %}</a>
+            {% endblock %}
+            <div class="flatpages">
+                {% for flatpage in flatpages %}
+                    <a href="{{ flatpage.url }}">{{ flatpage.title }}</a>
+                    {% if not forloop.last %} | {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+{% if debug %}
+<div id="debug">
+  <h2>Queries</h2>
+  <p>
+    {{ sql_queries|length }} Quer{{ sql_queries|pluralize:"y,ies" }}
+    {% ifnotequal sql_queries|length 0 %}
+    (<span style="cursor: pointer;" onclick="var s=document.getElementById('debugQueryTable').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='Show'?'Hide':'Show';">Show</span>)
+    {% endifnotequal %}
+  </p>
+  <table id="debugQueryTable" style="display: none;">
+    <col width="1"></col>
+    <col></col>
+    <col width="1"></col>
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">SQL</th>
+      <th scope="col">Time</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for query in sql_queries %}<tr class="{% cycle odd,even %}">
+      <td>{{ forloop.counter }}</td>
+      <td>{{ query.sql|escape }}</td>
+      <td>{{ query.time }}</td>
+    </tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}    </div>
+  </body>
+</html>

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block js %}
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/profile.js"></script>
+{% endblock %}
+
+{% block top %}
+    <h1>{% trans "User Preferences" %}</h1>
+{% endblock top %}
+
+{% block content %}
+    <form action="{% url ublogging.views.profile %}" method="post">
+        <fieldset>
+            <legend>{% trans "Sweetter 3.0 options" %}</legend>
+
+            <label for="apikey">Apikey:</label>
+            <div id="apikey">
+                {{apikey}}
+                <a href="renewapikey">renew apikey</a>
+            </div>
+
+            <label for="email">{% trans "email" %}:</label>
+            <input type="text" id="email" name="email" value="{{user.email}}"/>
+
+            <label for="url">{% trans "url" %}:</label>
+            <input type="text" id="url" name="url" value="{{user_profile.url}}"/>
+
+            <label for="location">{% trans "location" %}:</label>
+            <input type="text" id="location" name="location" value="{{user_profile.location}}"/>
+
+            <label for="pw">{% trans "Password" %}:</label>
+            <input type="password" id="pw" name="pw" value=""/>
+            <label for="pw2">{% trans "Password confirmation" %}:</label>
+            <input type="password" id="pw2" name="pw2" value=""/>
+            <div id="pw_info"></div>
+
+        </fieldset>
+
+        {% for key, opts in options.items %}
+            <fieldset>
+            <legend>{{ key }}</legend>
+
+                {% for opt in opts %}
+                    <label for="{{opt.id}}">{{opt.label}}:</label>
+                    {% ifequal opt.type "select" %}
+                        <select id="{{opt.id}}" name="{{opt.id}}">
+                            {% for val in opt.values %}
+                                <option value="{{val}}" {% ifequal opt.value val %}selected="selected"{% endifequal %}>
+                                    {{val}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <input type="{{opt.type}}" id="{{opt.id}}"
+                               name="{{opt.id}}" value="{{opt.value}}"
+
+                        {% ifequal opt.type "checkbox" %}
+                            {% if opt.value %}
+                                checked="checked"
+                            {% endif %}
+                        {% endifequal %}
+
+                        />
+                    {% endifequal %}
+                {% endfor %}
+
+            </fieldset>
+        {% endfor %}
+
+        <input class="button" type="submit" value="{% trans "Save" %}" />
+
+    </form>
+{% endblock content %}

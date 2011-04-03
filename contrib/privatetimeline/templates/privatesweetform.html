@@ -1,0 +1,112 @@
+{% load i18n %}
+<script>
+    function hide_forms() {
+        $("#post_form").attr("class", "");
+        $("#post_form_private_reply").attr("class", "hide");
+        $("#post_form_private_message").attr("class", "hide");
+        return false;
+    };
+    $(document).ready(function(){
+        $("#post_form_container2").show();
+        $("#post_form_container").append($("#post_form_container2"));
+        $(".private_reply").click(function(){
+            strarray = $(this).attr("title").split(';');
+            username = strarray[0];
+            keyid = strarray[1];
+            postid = strarray[2];
+            $("#reply_username").html(username);
+            $("#reply_to_sweet").attr("value", postid);
+            $("#text2").attr("encryption-key", keyid);
+            $("#text2_container").html($("#text2_container").html());
+            $("#text2").focus();
+            $("#private_reply_state").html('<a href="" title="Cancel" class="back_to_post_form" onClick="hide_forms()">{% trans "Cancel" %}</a>');
+            $("#post_form").attr("class", "hide");
+            $("#post_form_private_message").attr("class", "hide");
+            $("#post_form_private_reply").attr("class", "");
+            return false;
+        });
+        $(".private_message").click(function(){
+            strarray = $(this).attr("title").split(';');
+            username = strarray[0];
+            keyid = strarray[1];
+            $("#receiver_username").html(username);
+            $("#private_msg_receiver").attr("value", username);
+            $("#text3").attr("encryption-key", keyid);
+            $("#text3_container").html($("#text3_container").html());
+            $("#text3").focus();
+            $("#private_msg_state").html('<a href="" title="Cancel" class="back_to_post_form" onClick="hide_forms()">{% trans "Cancel" %}</a>');
+            $("#post_form").attr("class", "hide");
+            $("#post_form_private_reply").attr("class", "hide");
+            $("#post_form_private_message").attr("class", "");
+            return false;
+        });
+        $("#post_form_private_reply").submit(function() {
+            var sweet_id = $("#reply_to_sweet").attr("value");
+            var msg = $("#text2").attr("value");
+            var ajaxstate = $("#private_reply_state");
+            ajax_url = $(this).attr('action');
+            ajaxstate.html('<img src="{{ MEDIA_URL }}ajax-loader.gif" alt="loading"/>');
+            $.ajax({url: ajax_url,
+                    type: "POST",
+                    data: {msg: msg, sweet_id: sweet_id, ajax: 'true', receiver: username},
+                    dataType: "json",
+                    success: function(data, textStatus, XMLHttpRequest) {
+                        ajaxstate.html("{% trans "Private message sent" %}");
+                        $("#post_form").attr("class", "");
+                        $("#post_form_private_reply").attr("class", "hide");
+                        $("#post_form_private_message").attr("class", "hide");
+                        return false;
+                    }
+                    });
+            return false;
+        });
+        $("#post_form_private_message").submit(function() {
+            var receiver = $("#private_msg_receiver").attr("value");
+            var msg = $("#text3").attr("value");
+            var ajaxstate = $("#private_msg_state");
+            ajax_url = $(this).attr('action');
+            ajaxstate.html('<img src="{{ MEDIA_URL }}ajax-loader.gif" alt="loading"/>');
+            $.ajax({url: ajax_url,
+                    type: "POST",
+                    data: {msg: msg, receiver: receiver, ajax: 'true'},
+                    dataType: "json",
+                    success: function(data, textStatus, XMLHttpRequest) {
+                        ajaxstate.html("{% trans "Private message sent" %}");
+                        $("#post_form").attr("class", "");
+                        $("#post_form_private_reply").attr("class", "hide");
+                        $("#post_form_private_message").attr("class", "hide");
+                        return false;
+                    }
+                    });
+            return false;
+        });
+    });
+</script>
+<div id="post_form_container2" class="hide">
+<form id="post_form_private_reply" class="hide" method="post"
+    action="{% url contrib.privatetimeline.views.private_reply %}">
+    {% trans "Send private message to " %}
+    @<div id="reply_username" style="display: inline"></div>: <br/>
+    <div id="text2_container" style="display: inline">
+        <input style="display: inline; width: 600px;max-width:600px" type="text" name="text" id="text2" encryption="gpg">
+    </div>
+    <input style="display: inline" id="post_button2" class="button" type="submit" value="{% trans "Send!" %}" />
+    <input type="hidden" name="reply_to_sweet" id="reply_to_sweet" value="" /><br/>
+    <div id="private_reply_state">
+    <a href="" title="Cancel" class="back_to_post_form" onClick="hide_forms()">{% trans "Cancel" %}</a>
+    </div>
+</form>
+<form id="post_form_private_message" class="hide" method="post"
+    action="{% url contrib.privatetimeline.views.private_message %}">
+    {% trans "Send private message to " %}
+    @<div id="receiver_username" style="display: inline"></div>:
+    <div id="text3_container" style="display: inline">
+        <input style="display: inline; width: 600px;max-width:600px" type="text" name="text" id="text3" encryption="gpg">
+    </div>
+    <input style="display: inline" id="post_button3" class="button" type="submit" value="{% trans "Send!" %}" />
+    <input type="hidden" name="private_msg_receiver" id="private_msg_receiver" value="" /><br/>
+    <div id="private_msg_state">
+    <a href="" title="Cancel" class="back_to_post_form" onClick="hide_forms()">{% trans "Cancel" %}</a>
+    </div>
+</form>
+</div>

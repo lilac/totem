@@ -1,0 +1,11 @@
+{% load sweettags %}
+
+<div class="group">
+    <div class="avatar">
+        <img src="{{ group.icon.url }}" alt="{{ group.name }}" title="{{ group.name }}"
+            width="40px" height="40px"/>
+    </div>
+    <div class="text">
+        <a href="{% url contrib.groups.views.detail object_id=group.id %}">{{ group.name }}</a> ({{ group.users.count }})
+    </div>
+</div>

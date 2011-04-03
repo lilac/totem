@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<form action="" method="POST">
+    <label for="rusername">{% trans "Your username" %}: </label>
+    <input type="text" id="rusername" name="username"/>
+    <input type="submit" value="{% trans "Send" %}"/>
+</form>
+
+{% endblock content %}

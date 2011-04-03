@@ -1,0 +1,25 @@
+{% load sweettags i18n %}
+
+<div class="profile">
+    {% if viewing_user %}
+        <div class="avatar">
+            <img src="{% gravatar viewing_user.email 80 %}" alt="{{ viewing_user.username }}" title="{{ viewing_user.username }}"/>
+        </div>
+        <div style="clear: both;"></div>
+        <div class="text">
+            <h2><a href="{% url ublogging.views.user viewing_user.username %}">{{viewing_user.username}}</a></h2>
+            <div class="url">{% trans "url" %}: {{viewing_profile.url|urlizetrunc:31}}</div>
+            <div class="location">{% trans "Location" %}: {{viewing_profile.location}}</div>
+        </div>
+    {% else %}
+        <div class="avatar">
+            <img src="{% gravatar user.email 80 %}" alt="{{ user.username }}" title="{{ user.username }}"/>
+        </div>
+        <div style="clear: both;"></div>
+        <div class="text">
+            <h2><a href="{% url ublogging.views.user user.username %}">{{user.username}}</a></h2>
+            <div class="url">{% trans "url" %}: {{user_profile.url|urlizetrunc:31}}</div>
+            <div class="location">{% trans "Location" %}: {{user_profile.location}}</div>
+        </div>
+    {% endif %}
+</div>

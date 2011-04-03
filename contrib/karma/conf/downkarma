@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Add this script to /etc/cron.daily
+# change DIR var to your sweetter instalation
+DIR=/home/danigm/Projects/sweetter/sweetter/
+
+cd $DIR
+/usr/bin/python manage.py downkarma

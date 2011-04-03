@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block js %}
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+     $(".sweet").hover(function(){
+            $(this).css("background-color", "#ffffff");
+            $(this).find(".tools").show();
+     },
+     function(){
+            $(this).css("background-color", "transparent");
+            $(this).find(".tools").hide();
+     });
+     });
+    </script>
+{% endblock %}
+
+{% load privatesweettags i18n %}
+
+{% block top %}
+<h2>{% trans "Private Timeline" %}</h2>
+{% if user.is_authenticated %}
+<div id="post_form_container">
+<form id="post_form" action="{% url ublogging.views.new %}" method="post">
+    <textarea maxlength="140" name="text" id="text"></textarea>
+    <span id="counter">140</span>
+    <div id="hc" class="hide">140</div>
+    <input id="post_button" class="button" type="submit" value="{% trans "Post!" %}" />
+</form>
+</div>
+<img id="refresh_img" src="{{ MEDIA_URL }}ajax-loader.gif" style="display:none"/>
+{% endif %}
+{% endblock top %}
+
+{% block content %}
+
+{% if error_message %}<div class="message"><p><strong>{{ error_message }}</strong></p></div>{% endif %}
+
+{% if latest_privs_list %}
+    <div id="sweets">
+        {% for post in latest_privs_list.object_list %}
+            {% format_private_sweet post  %}
+        {% endfor %}
+    </div>
+    <div id="viewmore">
+        <a id="view_more" href="?page={{ latest_privs_list.next_page_number }}">{% trans "view more" %}</a>
+    </div>
+    <img id="loading_view_more" src="{{ MEDIA_URL }}ajax-loader.gif" style="display:none"/>
+{% else %}
+{% if sweet %}
+    <div id="sweets">
+        {% format_private_sweet sweet %}
+    </div>
+{% else %}
+    <p>{% trans "No private sweets are available." %}</p>
+{% endif %}
+{% endif %}
+
+<div class="hide" id="pagenumber">{{page}}</div>
+
+{% endblock content %}

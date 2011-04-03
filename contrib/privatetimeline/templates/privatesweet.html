@@ -1,0 +1,27 @@
+{% load sweettags i18n %}
+
+<div class="sweet" id="{{post.id}}">
+    <div class="avatar">
+        <a href="{% url ublogging.views.user post.sender.username %}">
+            <img src="{% gravatar post.sender.email %}" alt="{{ post.sender.username }}" title="{{ post.sender.username }}"/>
+        </a>
+    </div>
+
+    <div class="tools">
+        <a class="private_reply" href="" title="{{ post.sender.username }};{{ post.sender_key }};{{ post.id }}">
+            <img src="{{ MEDIA_URL }}private_reply.png" alt="private_reply"/>
+        </a>
+        <a class="delete" href="{% url contrib.privatetimeline.views.private_remove post.id %}" title="{% trans "delete" %}">
+            <img src="{{ MEDIA_URL }}remove.png" alt="{% trans "delete" %}"/>
+        </a>
+    </div>
+    <div class="sweet-text">
+        <span class="username"><a href="{% url ublogging.views.user post.sender.username %}">{{ post.sender.username }}</a></span> {% trans "said" %}: <br/>
+        <div style="margin-left: 65px"><div encryption="gpg" class="text">{{ post.msg|force_escape|parse|safe|urlizetrunc:31 }}</div></div>
+        <div class="date">
+                {% blocktrans with post.msg_date|timesince as date %} {{ date }} ago {% endblocktrans %}
+        </div>
+    </div>
+
+</div>
+ 

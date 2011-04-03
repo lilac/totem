@@ -1,0 +1,29 @@
+{% load i18n %}
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Sweetter 3.0: {% block title %} Microblogging {% endblock %}</title>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}themes/sweetter3/css/default.css" />
+    <link rel="stylesheet" href="{{ MEDIA_URL }}themes/sweetter3/css/login.css" />
+  </head>
+  <body>
+        <div id="wrapper">
+            <div id="login">
+                <h1>{% trans "Login" %}</h1>
+                {{ next }}
+                <form method="post" action="{% url django.contrib.auth.views.login %}">
+                    {% csrf_token %}
+			{{ form.as_p}}
+                    <input type="submit" value="{% trans "Login" %}" />
+                </form>
+
+            </div>
+        </div>
+        <div id="footer">
+            {% block footer %}{% trans "Sweetter 3.0 is opensource software. Powered by Django." %}{% endblock %}
+        </div>
+  </body>
+</html>
