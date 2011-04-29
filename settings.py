@@ -92,6 +92,11 @@ TEMPLATE_DIRS = (
     path.join(BASEDIR, 'templates'),
 )
 
+SERIALIZATION_MODULES = {
+    'fjson': 'util.full_serializers.json',
+    'sjson': 'util.serializers.json'
+}
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.admin',
@@ -113,7 +118,8 @@ INSTALLED_APPS = (
     'contrib.shorturl',
     'contrib.privatetimeline',
     'contrib.spam',
-
+    
+    'contrib.api',
     'jabberbot',
 )
 
