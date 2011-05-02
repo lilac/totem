@@ -149,6 +149,9 @@ class CheckIn(models.Model):
     comment = models.TextField(blank = True)
     picture = models.ForeignKey(Image, blank = True, null = True)
     visible = models.IntegerField(default = 0)
+
+    class Meta:
+        ordering = ['-time']
     
     def __unicode__(self):
         return self.place.name + " checked by " + self.user.name

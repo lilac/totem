@@ -10,14 +10,17 @@ from ublogging.models import *
 
 #profile_fields = Profile._meta.local
 profile_fields = ('id', 'name', 'url', 'gender', 'location', 'province')
+
+place_fields = ('id', 'name', 'addr', 'time', 'description', 'code',
+              'homepage', 'rank', 'longitude', 'latitude',
+              ('owner', profile_fields))
+
 class AnonymousPlaceHandler(AnonymousBaseHandler):
     """
     Anonymous entrypoint for blogposts.
     """
     model = Place
-    fields = ('id', 'name', 'addr', 'time', 'description', 'code',
-              'homepage', 'rank', 'longitude', 'latitude',
-              ('owner', profile_fields))
+    fields = place_fields
     exclude = ()
 #    @classmethod
 #    def resource_uri(self):
@@ -30,9 +33,7 @@ class PlaceHandler(BaseHandler):
     model = Place
     anonymous = AnonymousPlaceHandler
     
-    fields = ('id', 'name', 'addr', 'time', 'description', 'code',
-              'homepage', 'rank', 'longitude', 'latitude',
-              ('owner', profile_fields))
+    fields = place_fields
     exclude = ()
     
     def read(self, request, id = None):
@@ -84,31 +85,39 @@ class PlaceQueryHandler (BaseHandler):
             resp = rc.BAD_REQUEST
             return resp
         else:
-            return base.get(code=code)
+            place = base.get(code=code)
+            if place:
+                return place
+            else:
+                return rc.NOT_FOUND
+
+checkin_fields = (('user', profile_fields), ('place', place_fields), 'time', 'comment', 'picture', 'visible')
 
 class AnonymousCheckinHandler(BaseHandler):
     model = CheckIn
+    fields = checkin_fields 
     allowed_methods = ('GET')
     def read(self, request, id = None):
         base = CheckIn.objects
         if not id:
             return base.all()
         else:
-            return base.get(id=id)
+            checkin = base.get(id=id)
+            if checkin:
+                return checkin
+            else:
+                return rc.NOT_FOUND
        
 class CheckinHandler (BaseHandler):
     model = CheckIn
+    fields = checkin_fields
     anonymous = AnonymousCheckinHandler
     def has_model(self):
         return True
     
     def read(self, request, id = None):
-        base = CheckIn.objects
-        if not id:
-            return base.all()
-        else:
-            return base.get(id=id)
-        
+        self.anonymous.read(self, request, id)
+
     def create(self, request):
         attrs = self.flatten_dict(request.POST)
         place = request.POST.get('place', None)

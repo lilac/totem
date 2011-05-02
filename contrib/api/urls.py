@@ -51,7 +51,7 @@ urlpatterns += patterns('contrib.api.views',
     #(r'places/query.json', 'place_query'),
 	# place operation
 	(r'places/comment.json', 'comment_place'),
-	(r'places/checkin.json', 'checkin_place'),
+	#(r'places/checkin.json', 'checkin_place'),
 	(r'places/follow.json', 'follow_place'),
 	# show user info
 	(r'users/(?P<id>\d+).json', 'user'),

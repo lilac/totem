@@ -144,13 +144,15 @@ def jsonResponse(obj):
 
 def place_checkins(request, id):
     checkins = CheckIn.objects.filter(place = id)
-    checkins = jsonserializer.serialize(checkins)
-    return JSONResponse(checkins)
+    checkins = [jsonize_checkin(checkin) for checkin in checkins]
+    #TODO
+    return jsonResponse(checkins)
 
 def place_followers(request, id):
-    followers = PlaceFollower.objects.filter(follower = id)
-    dumps = jsonserializer.serialize(followers, ensure_ascii = False)
-    return jsonResponse(dumps)
+    pfs = PlaceFollower.objects.filter(place= id)
+    followers = [jsonize_profile(pf.follower) for pf in pfs]
+    #dumps = jsonserializer.serialize(followers, ensure_ascii = False)
+    return jsonResponse(followers)
 
 @http_auth
 def comment_place (request):
@@ -193,19 +195,28 @@ def checkin_place(request):
         return HttpResponseBadRequest()
 
 @http_auth
+@http.require_http_methods(['GET', 'POST'])
 def follow_place(request):
+    place = request.REQUEST.get('place', None)
+    if not place:
+        return HttpResponseBadRequest()
+    place = Place.objects.get(id=int(place))
+    if not place:
+        return HttpResponseNotFound()
+    user = Profile.objects.get(user=request.user)
+    status = PlaceFollower.objects.filter(place=place, follower = user)
     if request.method == 'POST':
-        place = request.POST.get('place', None)
-        if not place:
-            return HttpResponseBadRequest()
-        place = Place.get(id=int(place))
-        if not place:
-            return HttpResponseNotFound()
-        ret = PlaceFollower(place = place, user = request.user)
-        ret.save()
+        if not status:
+            pf = PlaceFollower(place = place, follower = user)
+            pf.save()
+        else:
+            status.delete()
         return HttpResponse(status=200)
     else:
-        return HttpResponseBadRequest()
+        if status:
+            return HttpResponse('1')
+        else:
+            return HttpResponse('0')
 
 @http_auth
 #@http.require_http_methods(["GET", "POST"])
@@ -213,7 +224,7 @@ def follow_place(request):
 def user(request, id):
     user = Profile.objects.get(user = id)
     if user:
-        return JSONResponse(jsonize_user(user))
+        return jsonResponse(jsonize_profile(user))
     else:
         return HttpResponseNotFound()
 
@@ -243,8 +254,13 @@ def mine(request):
         p.save()
         return jsonResponse(p)
 
-def user_followers(request):
-    pass
+def user_followers(request, id):
+    user = User.objects.get(id=id)
+    if not user:
+        return HttpResponseNotFound()
+    followers = Follower.objects.filter(user=user)
+    dicts = [jsonize_user(i) for i in followers]
+    return jsonResponse(dicts)
 
 
 @http_auth
@@ -255,6 +271,7 @@ def mail2user (request):
 @http_auth
 @http.require_http_methods(['GET', 'POST'])
 def follow_user (request):
+    #import pdb; pdb.set_trace()
     user = request.REQUEST.get('user', None)
     if not user:
         return HttpResponseBadRequest()

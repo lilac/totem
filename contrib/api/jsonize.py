@@ -4,6 +4,7 @@ import urllib, hashlib
 
 from ublogging.models import *
 from contrib.followers.models import Follower
+#from datetime import datetime
 
 
 def jsonize_post(post):
@@ -68,19 +69,28 @@ def jsonize_profile(p):
 def fields(o, fields):
     dict = {}
     for f in fields:
-        dict[f] = getattr(o, f)
+        dict[f] = getattr(o, f)#FIXME
     return dict
 
 def jsonize_place(place):
     owner = jsonize_user(place.owner)
     #dict = place.__dict__
-    dict = fields(place, ('id', 'name', 'time'))
+    dict = fields(place, ('id', 'name', ))
+    created_time = place.time + datetime.timedelta(seconds=time.timezone)
+    created_time = created_time.strftime("%a, %d %b %Y %H:%M:%S")
+    dict['time'] = created_time
     dict['owner'] = owner
     return dict
     #===========================================================================
     # dict = dict(id = place.id,
     #            name = place.name)
     #===========================================================================
+
+def jsonize_checkin(c):
+    place = jsonize_place(c.place)
+    user = jsonize_profile(c.user)
+    return dict(place=place, user=user)
+
 def jsonize_place_comment(comment):
     user = jsonize_user(comment.user)
     place = jsonize_place(comment.place)
